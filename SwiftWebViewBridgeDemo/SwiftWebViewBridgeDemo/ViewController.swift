@@ -29,9 +29,9 @@ class ViewController: UIViewController {
     
     @IBOutlet weak var reloadBtItem: UIBarButtonItem!
     
-    private var numOfLoadingRequest = 0
+    fileprivate var numOfLoadingRequest = 0
     
-    private var bridge: SwiftWebViewBridge!
+    fileprivate var bridge: SwiftWebViewBridge!
     
     // MARK: LifeCycle
     
@@ -43,7 +43,7 @@ class ViewController: UIViewController {
             print("Swift received message from JS: \(data)")
             
             // Actually, this responseCallback could be an empty closure when javascript has no callback, saving you from unwarping an optional parameter = )
-            responseCallback("Swift already got your msg, thanks")
+            responseCallback("Swift already got your msg, thanks" as AnyObject)
         })
         
         //  SwiftJavaScriptBridge.logging = false
@@ -54,10 +54,10 @@ class ViewController: UIViewController {
             // Because VC owned bridge, brige owned this closure, and this cloure captured self!
             self.printReceivedParmas(jsonData)
             
-            responseCallback(["msg": "Swift has already finished its handler", "returnValue": [1, 2, 3]])
+            responseCallback(["msg": "Swift has already finished its handler", "returnValue": [1, 2, 3]] as AnyObject)
             })
         
-        self.bridge.sendDataToJS(["msg": "Hello JavaScript, My name is 小明", "gift": ["100CNY", "1000CNY", "10000CNY"]])
+        self.bridge.sendDataToJS(["msg": "Hello JavaScript, My name is 小明", "gift": ["100CNY", "1000CNY", "10000CNY"]] as AnyObject)
         
         self.loadLocalWebPage()
     }
@@ -67,28 +67,28 @@ class ViewController: UIViewController {
 
 extension ViewController: UIWebViewDelegate {
     
-    func webViewDidStartLoad(webView: UIWebView) {
+    func webViewDidStartLoad(_ webView: UIWebView) {
         
         self.numOfLoadingRequest += 1
     }
     
-    func webViewDidFinishLoad(webView: UIWebView) {
+    func webViewDidFinishLoad(_ webView: UIWebView) {
         
         self.numOfLoadingRequest -= 1
         
         if (self.numOfLoadingRequest == 0) {
             
-            self.webviewTitleLb.text = webView.stringByEvaluatingJavaScriptFromString("document.title")
-            self.sendDataToJSBt.enabled = true
-            self.sendDataToJSWithCallBackBt.enabled = true
-            self.callJSHandlerBt.enabled = true
-            self.callJSHandlerWithCallBackBt.enabled = true
-            self.reloadBtItem.enabled = true
+            self.webviewTitleLb.text = webView.stringByEvaluatingJavaScript(from: "document.title")
+            self.sendDataToJSBt.isEnabled = true
+            self.sendDataToJSWithCallBackBt.isEnabled = true
+            self.callJSHandlerBt.isEnabled = true
+            self.callJSHandlerWithCallBackBt.isEnabled = true
+            self.reloadBtItem.isEnabled = true
             self.loadingActivity.stopAnimating()
         }
     }
     
-    func webView(webView: UIWebView, didFailLoadWithError error: NSError?) {
+    func webView(_ webView: UIWebView, didFailLoadWithError error: Error) {
         if let error = error {
             NSLog("\(error)")
         }
@@ -99,7 +99,7 @@ extension ViewController: UIWebViewDelegate {
 
 extension ViewController {
     
-    @IBAction func sendDataToJS(sender: AnyObject) {
+    @IBAction func sendDataToJS(_ sender: AnyObject) {
         
         self.bridge.sendDataToJS(["msg": "Hello JavaScript", "gift": ["100CNY", "1000CNY", "10000CNY"]])
         
@@ -108,7 +108,7 @@ extension ViewController {
         */
     }
     
-    @IBAction func sendDataToJSWithCallback(sender: AnyObject) {
+    @IBAction func sendDataToJSWithCallback(_ sender: AnyObject) {
         
         self.bridge.sendDataToJS("Did you received my gift, JS?", responseCallback: { data in
             
@@ -116,12 +116,12 @@ extension ViewController {
         })
     }
     
-    @IBAction func callJSHandler(sender: AnyObject) {
+    @IBAction func callJSHandler(_ sender: AnyObject) {
         
         self.bridge.callJSHandler("alertReceivedParmas", params: ["msg": "JS, are you there?", "num": 5], responseCallback: nil)
     }
     
-    @IBAction func callJSHandlerWithCallback(sender: AnyObject) {
+    @IBAction func callJSHandlerWithCallback(_ sender: AnyObject) {
         
         self.bridge.callJSHandler("alertReceivedParmas", params: ["msg": "JS, I know you there!"]) { data in
             
@@ -129,27 +129,27 @@ extension ViewController {
         }
     }
     
-    @IBAction func reloadAction(sender: AnyObject) {
+    @IBAction func reloadAction(_ sender: AnyObject) {
         
         self.numOfLoadingRequest = 0
         self.webviewTitleLb.text = ""
         self.loadingActivity.startAnimating()
-        self.sendDataToJSBt.enabled = false
-        self.sendDataToJSWithCallBackBt.enabled = false
-        self.callJSHandlerBt.enabled = false
-        self.callJSHandlerWithCallBackBt.enabled = false
-        self.reloadBtItem.enabled = false
+        self.sendDataToJSBt.isEnabled = false
+        self.sendDataToJSWithCallBackBt.isEnabled = false
+        self.callJSHandlerBt.isEnabled = false
+        self.callJSHandlerWithCallBackBt.isEnabled = false
+        self.reloadBtItem.isEnabled = false
         self.webView.reload()
     }
     
-    private func printReceivedParmas(data: AnyObject) {
+    fileprivate func printReceivedParmas(_ data: AnyObject) {
         
         print("Swift recieved data passed from JS: \(data)")
     }
     
-    private func loadLocalWebPage() {
+    fileprivate func loadLocalWebPage() {
         
-        guard let urlPath = NSBundle.mainBundle().URLForResource("Demo", withExtension: "html") else {
+        guard let urlPath = Bundle.main.url(forResource: "Demo", withExtension: "html") else {
             print("Couldn't find the Demo.html file in bundle!")
             return
         }
